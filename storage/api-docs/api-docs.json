@@ -1,0 +1,582 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "E-commerce API",
+        "description": "API RESTful segura para una plataforma de comercio electrónico desarrollada con Laravel.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000",
+            "description": "Servidor local"
+        }
+    ],
+    "paths": {
+        "/api/auth/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Registrar usuario",
+                "description": "Registra un nuevo usuario y devuelve un token JWT.",
+                "operationId": "register",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Juan Pérez"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "juan@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Password123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Usuario registrado correctamente"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Iniciar sesión",
+                "description": "Autentica un usuario y devuelve un token JWT.",
+                "operationId": "login",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "juan@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Inicio de sesión exitoso"
+                    },
+                    "401": {
+                        "description": "Credenciales incorrectas"
+                    }
+                }
+            }
+        },
+        "/api/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Obtener usuario autenticado",
+                "operationId": "getAuthenticatedUser",
+                "responses": {
+                    "200": {
+                        "description": "Usuario autenticado obtenido correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Cerrar sesión",
+                "operationId": "logout",
+                "responses": {
+                    "200": {
+                        "description": "Sesión cerrada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/orders": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Obtener historial de órdenes",
+                "description": "Obtiene las órdenes pertenecientes al usuario autenticado.",
+                "operationId": "getOrders",
+                "responses": {
+                    "200": {
+                        "description": "Historial de órdenes obtenido correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Crear una orden",
+                "description": "Crea una nueva orden, verifica el stock disponible y descuenta las cantidades de los productos.",
+                "operationId": "createOrder",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "items"
+                                ],
+                                "properties": {
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "product_id",
+                                                "quantity"
+                                            ],
+                                            "properties": {
+                                                "product_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "example": 2,
+                                                    "minimum": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "minItems": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Orden creada correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "Producto no encontrado"
+                    },
+                    "422": {
+                        "description": "Stock insuficiente o error de validación"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/orders/{id}": {
+            "get": {
+                "tags": [
+                    "Orders"
+                ],
+                "summary": "Obtener una orden",
+                "description": "Obtiene una orden específica perteneciente al usuario autenticado.",
+                "operationId": "getOrder",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID de la orden",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Orden obtenida correctamente"
+                    },
+                    "404": {
+                        "description": "Orden no encontrada"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/payments": {
+            "post": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Crear PaymentIntent de Stripe",
+                "description": "Crea un PaymentIntent en Stripe para una orden perteneciente al usuario autenticado.",
+                "operationId": "createPayment",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "order_id"
+                                ],
+                                "properties": {
+                                    "order_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "PaymentIntent creado correctamente"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    },
+                    "404": {
+                        "description": "Orden no encontrada"
+                    },
+                    "422": {
+                        "description": "La orden ya fue pagada o tiene un pago exitoso"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/products": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Listar productos",
+                "description": "Obtiene todos los productos activos disponibles.",
+                "operationId": "getProducts",
+                "responses": {
+                    "200": {
+                        "description": "Lista de productos obtenida correctamente"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Crear producto",
+                "description": "Crea un nuevo producto. Requiere autenticación JWT.",
+                "operationId": "createProduct",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "price",
+                                    "stock"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Laptop Pro"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Laptop profesional de alto rendimiento",
+                                        "nullable": true
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 899.99
+                                    },
+                                    "stock": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Producto creado correctamente"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/products/{id}": {
+            "get": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Obtener producto",
+                "description": "Obtiene un producto activo por su ID.",
+                "operationId": "getProduct",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del producto",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Producto obtenido correctamente"
+                    },
+                    "404": {
+                        "description": "Producto no encontrado"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Actualizar producto",
+                "description": "Actualiza un producto existente. Requiere autenticación JWT.",
+                "operationId": "updateProduct",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del producto",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Laptop Pro Actualizada"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Descripción actualizada",
+                                        "nullable": true
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 999.99
+                                    },
+                                    "stock": {
+                                        "type": "integer",
+                                        "example": 15
+                                    },
+                                    "is_active": {
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Producto actualizado correctamente"
+                    },
+                    "404": {
+                        "description": "Producto no encontrado"
+                    },
+                    "422": {
+                        "description": "Error de validación"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Products"
+                ],
+                "summary": "Eliminar producto",
+                "description": "Realiza una eliminación lógica del producto. Requiere autenticación JWT.",
+                "operationId": "deleteProduct",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID del producto",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 1
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Producto eliminado correctamente"
+                    },
+                    "404": {
+                        "description": "Producto no encontrado"
+                    },
+                    "401": {
+                        "description": "No autenticado"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "Ingrese el token JWT obtenido mediante /api/auth/login."
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Orders",
+            "description": "Orders"
+        },
+        {
+            "name": "Payments",
+            "description": "Payments"
+        },
+        {
+            "name": "Products",
+            "description": "Products"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ]
+}
